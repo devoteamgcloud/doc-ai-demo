@@ -5,6 +5,7 @@
 
 - install requirements
 - add environment variables
-- start with    ```sh
+- start with    
+   ```sh
    streamlit run  ./streamlit_docai.py
    ```
