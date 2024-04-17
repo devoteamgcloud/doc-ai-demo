@@ -102,7 +102,8 @@ checkbox_ocr = st.checkbox("Texterkennung", value=True)
 checkbox_sensitive = st.checkbox("Sensible Information extrahieren", value=True)
 
 # Every form must have a submit button.
-submitted = st.button("Start")
+columns = st.columns((2, 1, 2))
+submitted = columns[1].button('Start')
 
 if file is None:
     st.text("Bitte laden Sie ein Bild hoch")
@@ -137,7 +138,7 @@ else:
         image1 = Part.from_data(data=image_content, mime_type="image/jpeg")
 
         responses = model.generate_content(
-    [image1, """Who is the recipient of the email? Please provide only the answer with no introductions"""],
+    [image1, """Who is the recipient of the email? Please provide only the answer with no introductions. Provide the answer in German."""],
     generation_config={
         "max_output_tokens": 2048,
         "temperature": 0.4,
@@ -153,12 +154,12 @@ else:
     stream=True,
   ) 
       
-        resp = []
+        resp = ""
         for response in responses:
-             resp.append(response.text)
+             resp+= str(response.text)
 
         responses1 = model.generate_content(
-    [image1, """Can you summarize the letter?."""],
+    [image1, """Summarize the text in the image and answer in German. If the answer cannot be found, write 'Ich weiß es nicht'."""],
     generation_config={
         "max_output_tokens": 2048,
         "temperature": 0.4,
@@ -173,12 +174,12 @@ else:
     },
     stream=True,
   ) 
-        resp1 = []
+        resp1 = ""
         for response in responses1:
-             resp1.append(response.text)
+             resp1+= str(response.text)
 
         responses2 = model.generate_content(
-    [image1, """Are there any sensitive data in the letter? If yes, list it without saying 'yes' , otherwise say 'There are no sensitive information'."""],
+    [image1, """Are there any sensitive information in this letter? Like bank account number or bank balance. If yes, write them down in bullet points in german. If no, say: Keine sensiblen Informationen gefunden."""],
     generation_config={
         "max_output_tokens": 2048,
         "temperature": 0.4,
@@ -193,10 +194,9 @@ else:
     },
     stream=True,
   ) 
-        resp2 = []
+        resp2 = ""
         for response in responses2:
-             resp2.append(response.text)
-
+             resp2+= str(response.text)
 
         if checkbox_ocr:
              st.image(img)
@@ -206,12 +206,12 @@ else:
         if checkbox_recipient:
              st.subheader('Empfänger', divider='blue')
              st.success("Der/Die Empfänger*in: " + str(resp[0]) )
-             st.button("Weiterleiten an "+ str(resp[0]) )
+             st.button("Weiterleiten an "+ str(resp) )
 
         if checkbox_summary: 
              st.subheader('Zusammenfassung', divider='blue')
-             st.success( str(resp1[0]) )
+             st.success( str(resp1) )
 
         if checkbox_sensitive:
              st.subheader('Sensible Information', divider='blue')
-             st.success(str(resp2[0] ))
+             st.success(str(resp2))
